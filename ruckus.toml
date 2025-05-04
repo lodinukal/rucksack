@@ -1,2 +1,0 @@
-[dependencies]
-cart = { url = "git+https://github.com/lodinukal/cart", hash = "" }

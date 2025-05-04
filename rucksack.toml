@@ -1,0 +1,8 @@
+# Where the dependencies are installed to. This will be relative to the rucksack.toml file.
+# If not specified, the default is "packages".
+path = "packages"
+
+# Types of dependencies:
+# - git: A git repository. The path is the URL to the repository, can include tags through the # syntax.
+[dependencies]
+vide = "git https://github.com/centau/vide.git"

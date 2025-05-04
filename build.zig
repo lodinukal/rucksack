@@ -8,11 +8,41 @@ pub fn build(b: *std.Build) !void {
     const version = try Version.init(b);
     config.addOption(std.SemanticVersion, "version", version.version);
 
+    const toml_dep = b.dependency("toml", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    const toml_mod = toml_dep.module("zig-toml");
+
+    const libgit2_dep = b.dependency("libgit2", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const clap = b.dependency("clap", .{});
+    const clap_mod = clap.module("clap");
+
+    // const libgit2_translate_c = b.addTranslateC(.{
+    //     .target = target,
+    //     .optimize = optimize,
+    //     .root_source_file = libgit2_dep.path("include/git2.h"),
+    // });
+    // const libgit2_mod = libgit2_translate_c.createModule();
+
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
+    exe_mod.addCSourceFile(.{
+        .file = b.path("src/git_utils.c"),
+        .flags = &.{"-std=c99"},
+    });
+    exe_mod.addImport("config", config.createModule());
+    exe_mod.addImport("toml", toml_mod);
+    exe_mod.addImport("clap", clap_mod);
+    // exe_mod.addImport("git2", libgit2_mod);
+    exe_mod.linkLibrary(libgit2_dep.artifact("git2"));
     const exe = b.addExecutable(.{
         .name = "rucksack",
         .root_module = exe_mod,
