@@ -65,8 +65,9 @@ const Version = struct {
                 self.version.pre = b.allocator.dupe(u8, trimmed) catch @panic("OOM");
             }
             if (std.mem.eql(u8, pre, "date")) {
-                const date = b.run(&.{ "git", "log", "-1", "--format=%cI" });
-                const trimmed = std.mem.trim(u8, date, "\r\n ");
+                const date = b.run(&.{ "git", "log", "-1", "--format=%cs" });
+                const replaced_date = std.mem.replaceOwned(u8, b.allocator, date, "-", "") catch unreachable;
+                const trimmed = std.mem.trim(u8, replaced_date, "\r\n ");
                 self.version.pre = b.allocator.dupe(u8, trimmed) catch @panic("OOM");
             }
         }
