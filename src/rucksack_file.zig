@@ -58,7 +58,7 @@ pub fn install(file: RucksackFile) !void {
 
         switch (source_kind) {
             .git => {
-                const repo: *git.Repository = try git.Repository.clone(source_z, output_path, .{});
+                const repo = try gitz.Repository.clone(source_z, output_path, .{});
                 defer repo.deinit();
             },
             .tar => {
@@ -70,5 +70,4 @@ pub fn install(file: RucksackFile) !void {
 
 const toml = @import("toml");
 const std = @import("std");
-
-const git = @import("git.zig");
+const gitz = @import("gitz");

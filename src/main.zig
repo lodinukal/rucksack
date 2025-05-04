@@ -5,12 +5,6 @@ pub fn main() !void {
         _ = debug_allocator.deinit();
     };
 
-    if (git.init() == false) {
-        std.debug.print("Failed to initialize git\n", .{});
-        return error.GitInitFailed;
-    }
-    defer _ = git.deinit();
-
     const stderr = std.io.getStdErr().writer();
     cli.cliMain(allocator, stderr) catch |err| {
         stderr.print("{s}\n", .{cli.help_message}) catch {};
@@ -23,10 +17,7 @@ pub fn main() !void {
 }
 
 const std = @import("std");
-// const git2 = @import("git2");
 
 const cli = @import("cli.zig");
 
 const is_debug = @import("builtin").mode == .Debug;
-
-const git = @import("git.zig");

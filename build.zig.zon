@@ -28,7 +28,7 @@
 
     // Tracks the earliest Zig version that the package considers to be a
     // supported use case.
-    .minimum_zig_version = "0.15.0-dev.375+8f8f37fb0",
+    .minimum_zig_version = "0.14.0",
 
     // This field is optional.
     // Each dependency must either provide a `url` and `hash`, or a `path`.
@@ -40,13 +40,13 @@
             .url = "git+https://github.com/sam701/zig-toml#451fc7fb5ad302d3d83aeda234a8d15e792ca585",
             .hash = "toml-0.0.0-bV14BfdxAQDXkZ5wL6eVO9zBz622SAdz_pcWuQmTAsMg",
         },
-        .libgit2 = .{
-            .url = "git+https://github.com/allyourcodebase/libgit2#0a30de316f8455dfd0429bc90a6ab27d98d957df",
-            .hash = "libgit2-1.9.0-uizqTSnWAADnbLC8s7ma6s7RQwaCAzzlefSwu21AnYdr",
-        },
         .clap = .{
             .url = "git+https://github.com/Hejsil/zig-clap#a4e784da8399c51d5eeb5783e6a485b960d5c1f9",
             .hash = "clap-0.10.0-oBajB8fkAQB0JvsrWLar4YZrseSZ9irFxHB7Hvy_bvxb",
+        },
+        .gitz = .{
+            .url = "git+https://github.com/lodinukal/gitz#0ff38783d0f2e226291d797d43ef0ec386a024b7",
+            .hash = "gitz-0.0.0-k2PRI4BqAADyx6MM6J_2D_mDf7vOPzpHcheqjdbkYLOw",
         },
     },
     .paths = .{

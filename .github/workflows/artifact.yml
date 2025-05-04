@@ -57,7 +57,8 @@ jobs:
 
     name: ${{ matrix.name }}
     timeout-minutes: 20
-    runs-on: ubuntu-latest
+    # EVERY MACOS IS THE ONLY PLATFORM THAT WE DON'T HAVE HEADERS FOR
+    runs-on: macos-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4

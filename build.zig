@@ -14,10 +14,11 @@ pub fn build(b: *std.Build) !void {
     });
     const toml_mod = toml_dep.module("zig-toml");
 
-    const libgit2_dep = b.dependency("libgit2", .{
+    const gitz_dep = b.dependency("gitz", .{
         .target = target,
         .optimize = optimize,
     });
+    const gitz_mod = gitz_dep.module("gitz");
 
     const clap = b.dependency("clap", .{});
     const clap_mod = clap.module("clap");
@@ -34,15 +35,16 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    exe_mod.addCSourceFile(.{
-        .file = b.path("src/git_utils.c"),
-        .flags = &.{"-std=c99"},
-    });
+    // exe_mod.addCSourceFile(.{
+    //     .file = b.path("src/git_utils.c"),
+    //     .flags = &.{"-std=c99"},
+    // });
     exe_mod.addImport("config", config.createModule());
     exe_mod.addImport("toml", toml_mod);
     exe_mod.addImport("clap", clap_mod);
+    exe_mod.addImport("gitz", gitz_mod);
     // exe_mod.addImport("git2", libgit2_mod);
-    exe_mod.linkLibrary(libgit2_dep.artifact("git2"));
+    exe_mod.linkLibrary(gitz_dep.artifact("gitz"));
     const exe = b.addExecutable(.{
         .name = "rucksack",
         .root_module = exe_mod,
