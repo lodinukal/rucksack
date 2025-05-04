@@ -59,9 +59,14 @@ const Version = struct {
         });
         self.version = semantic_version;
         if (self.version.pre) |pre| {
-            if (std.mem.eql(u8, pre, "dev")) {
+            if (std.mem.eql(u8, pre, "git")) {
                 const hash = b.run(&.{ "git", "rev-parse", "--short", "HEAD" });
                 const trimmed = std.mem.trim(u8, hash, "\r\n ");
+                self.version.pre = b.allocator.dupe(u8, trimmed) catch @panic("OOM");
+            }
+            if (std.mem.eql(u8, pre, "date")) {
+                const date = b.run(&.{ "git", "log", "-1", "--format=%cI" });
+                const trimmed = std.mem.trim(u8, date, "\r\n ");
                 self.version.pre = b.allocator.dupe(u8, trimmed) catch @panic("OOM");
             }
         }
