@@ -45,8 +45,8 @@
             .hash = "clap-0.10.0-oBajB8fkAQB0JvsrWLar4YZrseSZ9irFxHB7Hvy_bvxb",
         },
         .gitz = .{
-            .url = "git+https://github.com/lodinukal/gitz#0ff38783d0f2e226291d797d43ef0ec386a024b7",
-            .hash = "gitz-0.0.0-k2PRI4BqAADyx6MM6J_2D_mDf7vOPzpHcheqjdbkYLOw",
+            .url = "git+https://github.com/lodinukal/gitz#fd2b07fdc2da099c587be7e98360675daece9790",
+            .hash = "gitz-0.0.0-k2PRI1hqAAD7suyPUs_UylAH-P7jHNBU11Sg93cVCACs",
         },
     },
     .paths = .{

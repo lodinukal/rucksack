@@ -75,7 +75,7 @@ jobs:
         run: cp -r ./zig-out/* .
 
       - name: Pack Artifact
-        run: zip -r ${{ matrix.artifact }}.zip ./bin ./include ./lib types .luaurc
+        run: zip -r ${{ matrix.artifact }}.zip ./bin
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

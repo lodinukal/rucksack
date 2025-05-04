@@ -58,7 +58,7 @@ pub fn install(file: RucksackFile) !void {
 
         switch (source_kind) {
             .git => {
-                const repo = try gitz.Repository.clone(source_z, output_path, .{});
+                const repo = try gitz.Repository.clone(source_z, output_path);
                 defer repo.deinit();
             },
             .tar => {
