@@ -51,14 +51,14 @@ jobs:
             target: aarch64-windows
             artifact: rucksack-${{ needs.prep.outputs.version }}-windows-aarch64
             ext: .exe
-          - name: macos arm64
-            target: aarch64-macos
-            artifact: rucksack-${{ needs.prep.outputs.version }}-macos-aarch64
+          # disable for now until CommonCrypto/CommonCrypto.h is included
+          # - name: macos arm64
+          #   target: aarch64-macos
+          #   artifact: rucksack-${{ needs.prep.outputs.version }}-macos-aarch64
 
     name: ${{ matrix.name }}
     timeout-minutes: 20
-    # EVERY MACOS IS THE ONLY PLATFORM THAT WE DON'T HAVE HEADERS FOR
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
