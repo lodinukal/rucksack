@@ -69,7 +69,7 @@ jobs:
           version: 0.14.0
 
       - name: Build
-        run: zig build -Doptimize=ReleaseFast -Dtarget=${{ matrix.target }}
+        run: zig build -Dtarget=${{ matrix.target }}
 
       - name: Copy binaries to root
         run: cp -r ./zig-out/* .

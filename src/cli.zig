@@ -9,6 +9,8 @@ pub const Subcommand = enum {
     install,
     /// remove all installed packages
     clean,
+    /// gets information about the current environment
+    env,
 };
 
 const main_parsers = .{
@@ -24,6 +26,7 @@ pub const help_message =
     \\  init       Create a new rucksack.toml file, if it doesn't exist.
     \\  install    Install dependencies listed in the rucksack.toml file (recursively).
     \\  clean      Remove all installed packages.
+    \\  env        Get information about the current environment.
     \\
 ;
 
@@ -101,6 +104,18 @@ pub fn cliMain(allocator: std.mem.Allocator, err_stream: anytype) !void {
                 return;
             }
             std.debug.print("No rucksack file found, skipping clean\n", .{});
+        },
+        .env => {
+            var max_path: [std.fs.max_path_bytes]u8 = undefined;
+            std.debug.print("Environment information:\n", .{});
+            std.debug.print("  Current working directory: {s}\n", .{try std.fs.cwd().realpath("", &max_path)});
+            std.debug.print("  Has rucksack file: {}\n", .{rucksack_file.hasRucksackFile(std.fs.cwd())});
+            if (result) |r| {
+                std.debug.print("  Rucksack install path: {s}\n", .{r.value.path orelse rucksack_file.default_path});
+            } else {
+                std.debug.print("  Rucksack install path: {s}\n", .{"none"});
+            }
+            return;
         },
     }
 }
