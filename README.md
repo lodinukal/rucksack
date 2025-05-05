@@ -19,9 +19,9 @@ Obtain the latest release from [here](https://github.com/lodinukal/rucksack/rele
 4. If you need to clean up the dependencies, run `rucksack clean`.
 
 ## TODO:
-- [ ] make the exe traverse the parent folders to find the rucksack.toml file
-- [ ] make the installation folder relative to the rucksack.toml file
+- [x] make the exe traverse the parent folders to find the rucksack.toml file
+- [x] make the installation folder relative to the rucksack.toml file
 - [ ] support tar files
 - [ ] support zip files
 - [ ] support git submodules
-- [ ] call rucksack install on all dependencies in the rucksack.toml file (maybe?)
+- [x] call rucksack install on all dependencies in the rucksack.toml file (maybe?)

@@ -10,7 +10,9 @@ pub fn main() !void {
         stderr.print("{s}\n", .{cli.help_message}) catch {};
         return switch (err) {
             // filter out errors that are not unexpected
-            error.NameNotPartOfEnum => return,
+            error.NameNotPartOfEnum,
+            error.NoCommand,
+            => return,
             else => err,
         };
     };

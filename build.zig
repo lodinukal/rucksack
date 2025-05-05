@@ -1,8 +1,19 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) !void {
-    const target = b.standardTargetOptions(.{});
+    const request_target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+
+    // minimum supported version is Windows 10 RS5
+    const target = if (request_target.result.os.tag == .windows)
+        b.resolveTargetQuery(.{
+            .os_tag = .windows,
+            .os_version_min = .{ .windows = .win10_rs5 },
+            .abi = .gnu,
+            .cpu_arch = request_target.result.cpu.arch,
+        })
+    else
+        request_target;
 
     const config = b.addOptions();
     const version = try Version.init(b);

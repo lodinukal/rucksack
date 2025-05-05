@@ -61,10 +61,9 @@ pub fn cliMain(allocator: std.mem.Allocator, err_stream: anytype) !void {
     };
     defer res.deinit();
 
-    var parser: toml.Parser(rucksack_file.RucksackFile) = .init(allocator);
-    defer parser.deinit();
-    var result: ?toml.Parsed(rucksack_file.RucksackFile) = parser.parseFile("./" ++ rucksack_file.rucksack_file_name) catch null;
-    defer if (result) |*r| r.deinit();
+    const rucksack_file: ?toml.Parsed(rucksack.Config), const rucksack_dir = rucksack.load(allocator, std.fs.cwd(), true) orelse
+        .{ null, std.fs.cwd() };
+    defer if (rucksack_file) |r| r.deinit();
 
     const command = res.positionals[0] orelse return error.NoCommand;
     switch (command) {
@@ -77,7 +76,7 @@ pub fn cliMain(allocator: std.mem.Allocator, err_stream: anytype) !void {
             return;
         },
         .init => {
-            rucksack_file.createDefault(std.fs.cwd()) catch |err| switch (err) {
+            rucksack.createDefault(rucksack_dir) catch |err| switch (err) {
                 error.RucksackFileAlreadyExists => {
                     std.debug.print("Rucksack file already exists\n", .{});
                     return;
@@ -89,45 +88,19 @@ pub fn cliMain(allocator: std.mem.Allocator, err_stream: anytype) !void {
             };
         },
         .install => {
-            if (result) |r| {
-                const path = r.value.path orelse rucksack_file.default_path;
-                try cleanPath(path);
-                try rucksack_file.install(r.value);
-                return;
-            }
-            std.debug.print("No rucksack file found, skipping install\n", .{});
+            try rucksack.install(allocator, rucksack_dir, true);
         },
         .clean => {
-            if (result) |r| {
-                const path = r.value.path orelse rucksack_file.default_path;
-                try cleanPath(path);
-                return;
-            }
-            std.debug.print("No rucksack file found, skipping clean\n", .{});
+            try rucksack.clean(allocator, rucksack_dir);
         },
         .env => {
             var max_path: [std.fs.max_path_bytes]u8 = undefined;
             std.debug.print("Environment information:\n", .{});
-            std.debug.print("  Current working directory: {s}\n", .{try std.fs.cwd().realpath("", &max_path)});
-            std.debug.print("  Has rucksack file: {}\n", .{rucksack_file.hasRucksackFile(std.fs.cwd())});
-            if (result) |r| {
-                std.debug.print("  Rucksack install path: {s}\n", .{r.value.path orelse rucksack_file.default_path});
-            } else {
-                std.debug.print("  Rucksack install path: {s}\n", .{"none"});
-            }
+            std.debug.print("  Current working directory: {s}\n", .{try rucksack_dir.realpath("", &max_path)});
+            std.debug.print("  Has rucksack file: {}\n", .{rucksack.hasRucksackFile(rucksack_dir)});
             return;
         },
     }
-}
-
-fn cleanPath(path: []const u8) !void {
-    // std.debug.print("Cleaning path: {s}\n", .{path});
-    std.fs.cwd().deleteTree(path) catch |err| switch (err) {
-        else => {
-            std.debug.print("Failed to delete path: {}\n", .{err});
-            return err;
-        },
-    };
 }
 
 const clap = @import("clap");
@@ -136,4 +109,4 @@ const toml = @import("toml");
 
 const config = @import("config");
 
-const rucksack_file = @import("rucksack_file.zig");
+const rucksack = @import("rucksack.zig");
