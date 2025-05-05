@@ -88,10 +88,28 @@ pub fn cliMain(allocator: std.mem.Allocator, err_stream: anytype) !void {
             };
         },
         .install => {
-            try rucksack.install(allocator, rucksack_dir, true);
+            rucksack.install(allocator, rucksack_dir, true) catch |err| switch (err) {
+                error.NoConfig => {
+                    std.debug.print("No rucksack file found\n", .{});
+                    return;
+                },
+                else => {
+                    std.debug.print("Failed to install rucksack file: {}\n", .{err});
+                    return err;
+                },
+            };
         },
         .clean => {
-            try rucksack.clean(allocator, rucksack_dir);
+            rucksack.clean(allocator, rucksack_dir) catch |err| switch (err) {
+                error.NoConfig => {
+                    std.debug.print("No rucksack file found\n", .{});
+                    return;
+                },
+                else => {
+                    std.debug.print("Failed to clean rucksack file: {}\n", .{err});
+                    return err;
+                },
+            };
         },
         .env => {
             var max_path: [std.fs.max_path_bytes]u8 = undefined;

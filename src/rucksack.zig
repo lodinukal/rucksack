@@ -59,7 +59,7 @@ pub const InstallConfigError = error{
 } || std.fs.Dir.OpenError ||
     std.fs.Dir.MakeError ||
     std.mem.Allocator.Error || GitError ||
-    error{ FileTooBig, FileBusy, FileSystem } ||
+    error{ FileTooBig, FileBusy, FileSystem, UnrecognizedVolume } ||
     std.fs.Dir.StatFileError;
 
 const GitError = error{
@@ -123,8 +123,11 @@ pub fn installConfig(allocator: std.mem.Allocator, dir: std.fs.Dir, config: Conf
 
         switch (source_kind) {
             .git => {
+                // we need to set the cwd so git2 can clone properly
+                try dir.setAsCwd();
                 const repo = try gitz.Repository.clone(source_z, output_path);
                 defer repo.deinit();
+                try std.fs.cwd().setAsCwd();
             },
             .tar => {
                 std.debug.print("Tar source: {s}\n", .{source});
