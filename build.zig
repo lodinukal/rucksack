@@ -59,6 +59,7 @@ pub fn build(b: *std.Build) !void {
     const exe = b.addExecutable(.{
         .name = "rucksack",
         .root_module = exe_mod,
+        .strip = true,
     });
 
     b.installArtifact(exe);
