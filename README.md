@@ -21,7 +21,7 @@ Obtain the latest release from [here](https://github.com/lodinukal/rucksack/rele
 ## TODO:
 - [x] make the exe traverse the parent folders to find the rucksack.toml file
 - [x] make the installation folder relative to the rucksack.toml file
-- [x] support tar files (.tar, .tar.gz, .tar.bz2)
+- [x] support tar files (.tar, .tar.gz, .tar.xz)
 - [x] support zip files
 - [ ] support git submodules
 - [x] call rucksack install on all dependencies in the rucksack.toml file (maybe?)
