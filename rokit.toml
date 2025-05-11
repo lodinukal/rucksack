@@ -4,4 +4,4 @@
 # New tools can be added by running `rokit add <tool>` in a terminal.
 
 [tools]
-rucksack = "lodinukal/rucksack@0.1.2"
+rucksack = "lodinukal/rucksack@0.1.4"
