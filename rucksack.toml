@@ -6,3 +6,4 @@ path = "packages"
 # - git: A git repository. The path is the URL to the repository, can include tags through the # syntax.
 [dependencies]
 vide = "git https://github.com/centau/vide.git"
+test = "zip https://github.com/lodinukal/rucksack/releases/download/v0.1.3/rucksack-0.1.3-windows-x86_64.zip"

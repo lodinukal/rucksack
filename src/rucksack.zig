@@ -5,6 +5,7 @@ pub const Config = struct {
 
 pub const SourceKind = enum {
     git,
+    zip,
     tar,
 };
 
@@ -60,7 +61,17 @@ pub const InstallConfigError = error{
     std.fs.Dir.MakeError ||
     std.mem.Allocator.Error || GitError ||
     error{ FileTooBig, FileBusy, FileSystem, UnrecognizedVolume } ||
-    std.fs.Dir.StatFileError;
+    std.fs.Dir.StatFileError ||
+    std.Uri.ParseError ||
+    error{ HttpProxyMissingHost, StreamTooLong } ||
+    std.http.Client.RequestError ||
+    std.http.Client.Request.SendError ||
+    std.http.Client.Request.ReadError ||
+    std.http.Client.Request.WaitError ||
+    std.http.Client.Request.WriteError ||
+    std.http.Client.Request.FinishError ||
+    std.http.Client.Connection.ReadError ||
+    std.http.Client.Connection.WriteError;
 
 const GitError = error{
     Generic,
@@ -129,8 +140,78 @@ pub fn installConfig(allocator: std.mem.Allocator, dir: std.fs.Dir, config: Conf
                 defer repo.deinit();
                 try std.fs.cwd().setAsCwd();
             },
-            .tar => {
-                std.debug.print("Tar source: {s}\n", .{source});
+            .zip, .tar => {
+                try dir.setAsCwd();
+                var arena: std.heap.ArenaAllocator = .init(allocator);
+                defer arena.deinit();
+                var client: std.http.Client = .{
+                    .allocator = allocator,
+                };
+                try client.initDefaultProxies(arena.allocator());
+                defer client.deinit();
+
+                var response: std.ArrayList(u8) = .init(arena.allocator());
+                defer response.deinit();
+
+                const fetched = try client.fetch(.{
+                    .method = .GET,
+                    .location = .{
+                        .url = source,
+                    },
+                    .response_storage = .{
+                        .dynamic = &response,
+                    },
+                    .max_append_size = std.math.maxInt(usize),
+                });
+
+                switch (fetched.status.class()) {
+                    .success => {},
+                    .redirect => {
+                        std.debug.print("Redirected to {}\n", .{fetched.status});
+                        return error.InvalidSource;
+                    },
+                    else => {
+                        std.debug.print("Failed to fetch {s}: {}\n", .{ source, fetched.status });
+                        return error.InvalidSource;
+                    },
+                }
+
+                var response_stream = std.io.fixedBufferStream(response.items);
+                const seekable_stream = response_stream.seekableStream();
+
+                // make paths
+                const out_dir = try std.fs.cwd().makeOpenPath(output_path, .{});
+
+                switch (source_kind) {
+                    .zip => {
+                        std.zip.extract(out_dir, seekable_stream, .{}) catch |err| {
+                            std.debug.print("Failed to extract zip {s}: {s}\n", .{ source, @errorName(err) });
+                            return error.InvalidSource;
+                        };
+                    },
+                    .tar => {
+                        const kind: DecompressionKind = find: {
+                            if (std.mem.endsWith(u8, source, ".gz")) break :find .gzip;
+                            if (std.mem.endsWith(u8, source, ".xz")) break :find .xz;
+                            if (std.mem.endsWith(u8, source, ".tar")) break :find .none;
+                            break :find .none;
+                        };
+
+                        const decompressed = decompress(arena.allocator(), response.items, kind) catch |err| {
+                            std.debug.print("Failed to decompress tar {s}: {s}\n", .{ source, @errorName(err) });
+                            return error.InvalidSource;
+                        };
+
+                        var using_stream = std.io.fixedBufferStream(decompressed);
+
+                        std.tar.pipeToFileSystem(out_dir, using_stream.reader(), .{}) catch |err| {
+                            std.debug.print("Failed to extract tar {s}: {s}\n", .{ source, @errorName(err) });
+                            return error.InvalidSource;
+                        };
+                    },
+                    else => unreachable,
+                }
+                try std.fs.cwd().setAsCwd();
             },
         }
 
@@ -143,6 +224,34 @@ pub fn installConfig(allocator: std.mem.Allocator, dir: std.fs.Dir, config: Conf
                 return err;
             },
         };
+    }
+}
+
+const DecompressionKind = enum {
+    none,
+    gzip,
+    xz,
+};
+fn decompress(arena: std.mem.Allocator, source: []const u8, kind: DecompressionKind) ![]const u8 {
+    var source_stream = std.io.fixedBufferStream(source);
+
+    switch (kind) {
+        .gzip => {
+            var decompressed: std.ArrayList(u8) = .init(arena);
+            try std.compress.gzip.decompress(source_stream.reader(), decompressed.writer());
+            return decompressed.items;
+        },
+        .xz => {
+            var decompressed = try std.compress.xz.decompress(arena, source_stream.reader());
+            defer decompressed.deinit();
+            var decompressed_buffer: std.ArrayList(u8) = .init(arena);
+            try decompressed.reader().readAllArrayList(&decompressed_buffer, std.math.maxInt(usize));
+            return decompressed_buffer.items;
+        },
+        .none => {
+            // no decompression needed
+            return source;
+        },
     }
 }
 
